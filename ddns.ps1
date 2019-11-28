@@ -1,10 +1,12 @@
 ## Update-Slack Function
 function Update-Slack {
-	param ( [string] $IP)
+	param (
+		[string] $message
+	)
 	$uriSlack = $env:Slack
 	$body = ConvertTo-Json @{
-		pretext = "IP Address Changed"
-		text = "$env:URL has moved to $IP"
+		pretext = "DDNS Update"
+		text = "$message"
 		color = "#142954"
 	}
 
@@ -12,7 +14,19 @@ function Update-Slack {
 		Invoke-RestMethod -uri $uriSlack -Method Post -body $body -ContentType 'application/json' | Out-Null
 	} catch {
 		Write-Error (Get-Date) ": Update to Slack went wrong..."
+	}
 }
+
+function Update-Cloudflare {
+	param (
+		OptionalParameters
+	)
+	Write-Verbose "Updating DNS Records..."
+	$dnsrecordid = $(Invoke-RestMethod -Method GET -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$env:URL" -Headers $header -ContentType "application/json").result.id
+	$APIBody = @{ type="A"; name=$name; content="$($CurrentIP.IP)"}
+	$APIBodyJson = $APIBody | ConvertTo-Json -Depth 5
+	$Responce = Invoke-RestMethod -ContentType "application/json" -Headers $header -Method PUT -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$dnsrecordid" -Body $APIBodyJson
+
 }
 
 $header = @{"Authorization"="Bearer $env:bearer"}
@@ -28,7 +42,7 @@ while($true){
             if ($CurrentCF -ne $($CurrentIP.IP)){
 				Write-Host "IP Address has changed to $($CurrentIP.IP). DNS Records Need to be updated after $(NEW-TIMESPAN –Start $($LastIP.LastUpdate) –End $($CurrentIP.LastUpdate))"
 				if ($env:Slack -ne "Not_Set"){
-					Update-Slack -IP "$($CurrentIP.IP)"
+					Update-Slack -message "$env:URL has moved to $IP"
 				}
 				Write-Verbose "Updating DNS Records..."
 				$dnsrecordid = $(Invoke-RestMethod -Method GET -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$env:URL" -Headers $header -ContentType "application/json").result.id
@@ -50,8 +64,9 @@ while($true){
 					break
 				}
 			} else {
-			$LastIP = $CurrentIP
-			Write-Host "Current IP address is already Live on CloudFLare.`nNo action requred"
+			$LastIP = $CurrentCF
+			Write-Host "Current IP ($CurrentCF) address is already Live on CloudFLare.`nNo action requred"
+			Update-Slack -message "Current IP ($CurrentCF) address is already Live on CloudFLare.`n*No action requred*"
 			}
 			
         }
