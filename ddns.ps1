@@ -53,9 +53,9 @@ while($true){
 					break
 				}
 			} else {
-			$LastIP = $CurrentCF
-			Write-Host "Current IP ($CurrentCF) address is already Live on CloudFLare.`nNo action requred"
-			Update-Slack -message "Current IP ($CurrentCF) address is already Live on CloudFLare.`n*No action requred*"
+			$LastIP = @{IP="$CurrentCF";LastUpdate="$(Get-Date)"}
+			Write-Host "$env:URL`nCurrent IP address ($CurrentCF) is already Live on CloudFLare.`nNo action requred"
+			Update-Slack -message "$env:URL`nCurrent IP address ($CurrentCF) is already Live on CloudFLare.`n*No action requred*"
 			}
 			
         }
