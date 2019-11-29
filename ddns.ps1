@@ -17,17 +17,6 @@ function Update-Slack {
 	}
 }
 
-function Update-Cloudflare {
-	param (
-		OptionalParameters
-	)
-	Write-Verbose "Updating DNS Records..."
-	$dnsrecordid = $(Invoke-RestMethod -Method GET -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$env:URL" -Headers $header -ContentType "application/json").result.id
-	$APIBody = @{ type="A"; name=$name; content="$($CurrentIP.IP)"}
-	$APIBodyJson = $APIBody | ConvertTo-Json -Depth 5
-	$Responce = Invoke-RestMethod -ContentType "application/json" -Headers $header -Method PUT -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$dnsrecordid" -Body $APIBodyJson
-
-}
 
 $header = @{"Authorization"="Bearer $env:bearer"}
 $zoneid = $env:zoneid
