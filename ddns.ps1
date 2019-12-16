@@ -24,8 +24,9 @@ $LastIP = [PSCustomObject]@{IP="";LastUpdate="$(Get-Date)"}
 $name = $($($env:URL).split("."))[0]
 while($true){
     While($(Test-Connection ifconfig.me -count 1 -quiet -InformationAction Ignore)){   # returns true if the host can be reached and ignores the loop if it cant connect.
-        $CurrentIP = [PSCustomObject]@{IP="$(Invoke-RestMethod http://ifconfig.me/ip)";LastUpdate=$(Get-Date)}
-        if($($CurrentIP.IP) -ne $($LastIP.IP)){
+        $getUpdate = Invoke-WebRequest http://ifconfig.me
+	$CurrentIP = [PSCustomObject]@{IP="$(Invoke-RestMethod http://ifconfig.me/ip)";LastUpdate=$(Get-Date)}
+        if($($CurrentIP.IP) -ne $($LastIP.IP) -and $getUpdate.StatusCode -eq "200"){
 			$dnsrecordid = $(Invoke-RestMethod -Method GET -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$env:URL" -Headers $header -ContentType "application/json").result.id
 			$CurrentCF = $(Invoke-RestMethod -ContentType "application/json" -Headers $header -Method GET -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records/$dnsrecordid").result.content
             if ($CurrentCF -ne $($CurrentIP.IP)){
