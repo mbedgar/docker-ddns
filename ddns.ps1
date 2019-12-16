@@ -32,7 +32,7 @@ while($true){
             if ($CurrentCF -ne $($CurrentIP.IP)){
 				Write-Host "IP Address has changed to $($CurrentIP.IP). DNS Records Need to be updated after $(NEW-TIMESPAN –Start $($LastIP.LastUpdate) –End $($CurrentIP.LastUpdate))"
 				if ($env:Slack -ne "Not_Set"){
-					Update-Slack -message "$env:URL has moved to $IP"
+					Update-Slack -message "$env:URL has moved to $($CurrentIP.IP)"
 				}
 				Write-Verbose "Updating DNS Records..."
 				$dnsrecordid = $(Invoke-RestMethod -Method GET -Uri "https://api.cloudflare.com/client/v4/zones/$zoneid/dns_records?type=A&name=$env:URL" -Headers $header -ContentType "application/json").result.id
