@@ -1,3 +1,4 @@
+## Max Edgar
 ## Update-Slack Function
 function Update-Slack {
 	param (
