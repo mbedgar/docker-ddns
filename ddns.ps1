@@ -24,7 +24,7 @@ $zoneid = $env:zoneid
 $LastIP = [PSCustomObject]@{IP="";LastUpdate="$(Get-Date)"}
 $name = $($($env:URL).split("."))[0]
 while($true){
-    While($(Test-Connection ifconfig.me -count 1 -quiet -InformationAction Ignore)){   # returns true if the host can be reached and ignores the loop if it cant connect.
+    if($(Test-Connection 8.8.8.8 -count 2 -quiet -InformationAction Ignore)){   # returns true if the host can be reached and ignores the loop if it cant connect.
         $getUpdate = Invoke-WebRequest http://ifconfig.me
 	$CurrentIP = [PSCustomObject]@{IP="$(Invoke-RestMethod http://ifconfig.me/ip)";LastUpdate=$(Get-Date)}
         if($($CurrentIP.IP) -ne $($LastIP.IP) -and $getUpdate.StatusCode -eq "200"){
