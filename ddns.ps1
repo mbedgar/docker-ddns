@@ -26,7 +26,7 @@ $dnsrecordid = $(Invoke-RestMethod -Method GET -Uri "https://api.cloudflare.com/
 
 while($true){
     if($(Test-Connection 8.8.8.8 -count 2 -quiet -InformationAction Ignore)){   # returns true if the host can be reached and ignores the loop if it cant connect.
-		$GetIP = $(Invoke-WebRequest http://ifconfig.me)
+		$GetIP = $(Invoke-WebRequest http://ifconfig.me/ip)
 		$CurrentIP = [PSCustomObject]@{IP=$GetIP.Content;DateStamp=$(Get-Date);StatusCode=$GetIP.StatusCode}
 		
 		if($($CurrentIP.IP) -ne $($LastIP.IP) -and $CurrentIP.StatusCode -eq "200"){
@@ -36,7 +36,7 @@ while($true){
 				Write-Host "IP Address has changed to $($CurrentIP.IP). DNS Records Need to be updated after $(NEW-TIMESPAN –Start $($LastIP.DateStamp) –End $($CurrentIP.DateStamp))"
 				
 				if ($env:Slack -ne "Not_Set"){
-					Update-Slack -message "$env:URL has moved to $($CurrentIP.IP)"
+					Update-Slack -message "$env:URL has moved to $($CurrentIP.IP) after $(NEW-TIMESPAN –Start $($LastIP.DateStamp) –End $($CurrentIP.DateStamp))"
 				}
 				
 				Write-Verbose "Updating DNS Records..."
